@@ -95,9 +95,9 @@ main{flex:1;padding:14px 16px 100px;}
 .card-meta .when{font-weight:600;}
 .when.overdue{color:var(--text);font-weight:700;}
 .when.today{color:var(--text);}
-.card-actions{display:flex;gap:7px;margin-top:10px;}
+.card-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;}
 .btn{
-  flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:var(--bg3);
+  flex:1 1 72px;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:var(--bg3);
   color:var(--text);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;text-align:center;
   text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px;
 }
@@ -145,9 +145,15 @@ nav.tabbar{
   padding:9px 4px 8px;color:var(--muted2);font-size:10.5px;font-weight:600;
   background:none;border:none;font-family:inherit;cursor:pointer;
 }
-.tab .ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.tab .ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;position:relative;}
 .tab .ic svg{width:20px;height:20px;stroke:currentColor;}
 .tab.active{color:#fff;}
+.tab-badge{
+  position:absolute;top:-6px;right:-9px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;
+  background:#fff;color:#141416;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.tab-badge[hidden]{display:none;}
 
 /* FAB */
 .fab{
@@ -198,6 +204,34 @@ nav.tabbar{
 .install-banner.show{display:block;}
 .install-banner b{color:var(--text);}
 
+/* CHIPS */
+.chip-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px;scrollbar-width:none;}
+.chip-row::-webkit-scrollbar{display:none;}
+.chip{
+  flex:none;padding:7px 13px;border-radius:20px;border:1px solid var(--line2);background:var(--bg3);
+  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+}
+.chip.sel{background:#fff;border-color:#fff;color:#141416;}
+
+/* ACTIVITY HISTORY */
+.history-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto;}
+.history-item{
+  font-size:12.5px;color:var(--muted);padding:8px 10px;background:var(--bg3);border-radius:9px;
+  display:flex;justify-content:space-between;gap:8px;
+}
+.history-item .htext{color:var(--text);}
+.history-item .hwhen{color:var(--muted2);white-space:nowrap;font-size:11px;}
+
+/* TOAST */
+.toast{
+  position:fixed;left:50%;bottom:calc(84px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);
+  background:#fff;color:#141416;padding:11px 12px 11px 16px;border-radius:12px;z-index:60;
+  display:flex;align-items:center;gap:14px;font-size:13px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  opacity:0;pointer-events:none;transition:opacity 0.2s, transform 0.2s;max-width:90vw;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+.toast button{background:none;border:none;font-weight:700;color:#141416;text-decoration:underline;cursor:pointer;font-size:13px;font-family:inherit;}
+
 /* A11Y */
 .sr-only{
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -244,7 +278,10 @@ nav.tabbar{
 
   <nav class="tabbar" aria-label="Main">
     <button class="tab active" data-tab="followups" aria-current="page">
-      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="M7 12l3 3 7-7"></path></svg></span>
+      <span class="ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="M7 12l3 3 7-7"></path></svg>
+        <span class="tab-badge" id="followupBadge" hidden>0</span>
+      </span>
       Follow-Ups
     </button>
     <button class="tab" data-tab="calendar">
@@ -306,6 +343,10 @@ nav.tabbar{
         <label for="f_notes">Notes</label>
         <textarea id="f_notes" placeholder="Anything worth remembering…"></textarea>
       </div>
+      <div class="field" id="historyField" style="display:none;">
+        <label>Activity</label>
+        <div class="history-list" id="historyList"></div>
+      </div>
       <div class="sheet-actions">
         <button type="button" class="btn ghost danger" id="deleteBtn" style="display:none;">Delete</button>
         <button type="button" class="btn ghost" id="cancelBtn">Cancel</button>
@@ -314,6 +355,8 @@ nav.tabbar{
     </form>
   </div>
 </div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- SETTINGS SHEET -->
 <div class="sheet-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
@@ -384,6 +427,20 @@ function whenClass(iso){
 function money(n){
   return (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
 }
+function logActivity(entry, text){
+  if(!Array.isArray(entry.history)) entry.history = [];
+  entry.history.push({ date: todayStr(), ts: Date.now(), text });
+}
+function timeAgo(ts){
+  const mins = Math.round((Date.now()-ts)/60000);
+  if(mins<1) return 'just now';
+  if(mins<60) return `${mins}m ago`;
+  const hrs = Math.round(mins/60);
+  if(hrs<24) return `${hrs}h ago`;
+  const days = Math.round(hrs/24);
+  if(days<30) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString(undefined,{month:'short', day:'numeric'});
+}
 
 /* ---------- rendering ---------- */
 const view = document.getElementById('view');
@@ -408,6 +465,20 @@ function render(){
   else if(activeTab==='calendar') renderCalendar();
   else if(activeTab==='sales') renderSales();
   else if(activeTab==='contacts') renderContacts();
+  updateBadges();
+}
+
+function updateBadges(){
+  const overdueCount = entries.filter(e =>
+    e.status!=='sold' && e.status!=='lost' && e.nextFollowUp && daysBetween(todayStr(), e.nextFollowUp) < 0
+  ).length;
+  const badge = document.getElementById('followupBadge');
+  if(overdueCount>0){ badge.textContent = overdueCount>99?'99+':overdueCount; badge.hidden = false; }
+  else { badge.hidden = true; }
+  if('setAppBadge' in navigator){
+    if(overdueCount>0) navigator.setAppBadge(overdueCount).catch(()=>{});
+    else if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
+  }
 }
 
 function cardHTML(e){
@@ -426,7 +497,8 @@ function cardHTML(e){
     ${status==='sold' ? `<div class="card-meta"><span>${money(e.saleAmount)} on ${e.saleDate ? humanDate(e.saleDate) : '—'}</span></div>` : ''}
     ${showWhen ? `<div class="card-meta"><span class="when ${whenClass(e.nextFollowUp)}">${humanDate(e.nextFollowUp)}</span></div>` : ''}
     <div class="card-actions">
-      ${e.phone ? `<a class="btn" href="tel:${escapeAttr(e.phone)}">Call</a>` : ''}
+      ${e.phone ? `<a class="btn" href="tel:${escapeAttr(e.phone)}" data-action="call" data-id="${e.id}">Call</a>` : ''}
+      ${e.phone ? `<a class="btn" href="sms:${escapeAttr(e.phone)}" data-action="text" data-id="${e.id}">Text</a>` : ''}
       ${status!=='sold' && status!=='lost' ? `<button class="btn" data-action="snooze" data-id="${e.id}">↻ +7d</button>` : ''}
       ${status!=='sold' ? `<button class="btn" data-action="marksold" data-id="${e.id}">✓ Sold</button>` : ''}
       <button class="btn primary" data-action="edit" data-id="${e.id}">Edit</button>
@@ -514,28 +586,47 @@ function renderCalendar(){
 }
 
 function renderSales(){
-  const sold = filteredEntries().filter(e=>e.status==='sold').sort((a,b)=> (b.saleDate||'').localeCompare(a.saleDate||''));
+  const all = filteredEntries();
+  const sold = all.filter(e=>e.status==='sold').sort((a,b)=> (b.saleDate||'').localeCompare(a.saleDate||''));
+  const lostCount = all.filter(e=>e.status==='lost').length;
   const now = new Date();
   const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const totalAll = sold.reduce((s,e)=> s + (Number(e.saleAmount)||0), 0);
   const totalMonth = sold.filter(e=> (e.saleDate||'').startsWith(thisMonthKey)).reduce((s,e)=> s+(Number(e.saleAmount)||0), 0);
+  const winRate = (sold.length+lostCount)>0 ? Math.round(sold.length/(sold.length+lostCount)*100) : null;
 
   view.innerHTML = `
     <div class="totals-row">
       <div class="total-card"><div class="label">This Month</div><div class="value">${money(totalMonth)}</div></div>
       <div class="total-card"><div class="label">All Time</div><div class="value">${money(totalAll)}</div></div>
     </div>
+    <div class="totals-row">
+      <div class="total-card"><div class="label">Deals Won</div><div class="value">${sold.length}</div></div>
+      <div class="total-card"><div class="label">Win Rate</div><div class="value">${winRate===null?'—':winRate+'%'}</div></div>
+    </div>
     <div class="section-title">Book of Sales (${sold.length})</div>
     ${sold.length ? sold.map(cardHTML).join('') : `<div class="empty">No sales logged yet.<br>Mark a follow-up as <b>Sold</b> once you close the deal.</div>`}
   `;
 }
 
+let contactsFilter = 'all';
 function renderContacts(){
-  const list = filteredEntries().slice().sort((a,b)=> (a.business||'').localeCompare(b.business||''));
+  const all = filteredEntries();
+  const list = all.filter(e => contactsFilter==='all' || (e.status||'lead')===contactsFilter)
+    .sort((a,b)=> (a.business||'').localeCompare(b.business||''));
+  const chips = ['all','lead','appointment','followup','sold','lost'];
+  const chipLabel = {all:'All', lead:'Lead', appointment:'Appointment', followup:'Follow-Up', sold:'Sold', lost:'Lost'};
+  const chipRow = `<div class="chip-row">${chips.map(c=>
+    `<button class="chip ${contactsFilter===c?'sel':''}" data-filter="${c}">${chipLabel[c]}${c!=='all'?` (${all.filter(e=>(e.status||'lead')===c).length})`:` (${all.length})`}</button>`
+  ).join('')}</div>`;
   view.innerHTML = `
-    <div class="section-title">All Contacts (${list.length})</div>
-    ${list.length ? list.map(cardHTML).join('') : `<div class="empty">No contacts yet.<br><b>Tap the ＋ button</b> to add one.</div>`}
+    ${chipRow}
+    <div class="section-title">Contacts (${list.length})</div>
+    ${list.length ? list.map(cardHTML).join('') : `<div class="empty">No contacts here yet.<br><b>Tap the ＋ button</b> to add one.</div>`}
   `;
+  view.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ contactsFilter = chip.dataset.filter; renderContacts(); });
+  });
 }
 
 function escapeHTML(s){
@@ -551,10 +642,15 @@ document.addEventListener('click', (ev)=>{
   const entry = entries.find(e=>e.id===id);
   if(!entry) return;
   if(btn.dataset.action==='edit'){ openEdit(entry); }
-  else if(btn.dataset.action==='snooze'){
+  else if(btn.dataset.action==='call'){
+    logActivity(entry, 'Called'); saveEntries(entries);
+  } else if(btn.dataset.action==='text'){
+    logActivity(entry, 'Texted'); saveEntries(entries);
+  } else if(btn.dataset.action==='snooze'){
     const base = entry.nextFollowUp ? parseISO(entry.nextFollowUp) : new Date();
     base.setDate(base.getDate()+7);
     entry.nextFollowUp = fmtISO(base);
+    logActivity(entry, `Snoozed to ${humanDate(entry.nextFollowUp)}`);
     saveEntries(entries); render();
   } else if(btn.dataset.action==='marksold'){
     const amt = prompt(`Sale amount for ${entry.business}?`, entry.saleAmount || '');
@@ -563,7 +659,9 @@ document.addEventListener('click', (ev)=>{
     entry.saleAmount = parseFloat(amt)||0;
     entry.saleDate = todayStr();
     entry.nextFollowUp = '';
+    logActivity(entry, `Marked Sold — ${money(entry.saleAmount)}`);
     saveEntries(entries); render();
+    if(navigator.vibrate) navigator.vibrate([15,40,15]);
   }
 });
 
@@ -630,6 +728,19 @@ function openEdit(entry){
   document.getElementById('f_notes').value = entry.notes||'';
   setStatus(entry.status||'lead');
   document.getElementById('deleteBtn').style.display = 'block';
+
+  const historyField = document.getElementById('historyField');
+  const historyList = document.getElementById('historyList');
+  const hist = (entry.history||[]).slice().reverse();
+  if(hist.length){
+    historyField.style.display = 'block';
+    historyList.innerHTML = hist.map(h=>
+      `<div class="history-item"><span class="htext">${escapeHTML(h.text)}</span><span class="hwhen">${timeAgo(h.ts)}</span></div>`
+    ).join('');
+  } else {
+    historyField.style.display = 'none';
+    historyList.innerHTML = '';
+  }
   editOverlay.classList.add('show');
 }
 document.getElementById('fabAdd').addEventListener('click', openAdd);
@@ -654,8 +765,12 @@ entryForm.addEventListener('submit', (e)=>{
   if(!data.business){ return; }
   if(id){
     const idx = entries.findIndex(x=>x.id===id);
+    data.history = entries[idx].history || [];
     entries[idx] = data;
   } else {
+    const dup = entries.find(x=> x.business.trim().toLowerCase()===data.business.toLowerCase());
+    if(dup && !confirm(`You already have "${dup.business}" saved. Add it again anyway?`)) return;
+    data.history = [{ date: todayStr(), ts: Date.now(), text: 'Added' }];
     entries.push(data);
   }
   saveEntries(entries);
@@ -665,12 +780,32 @@ entryForm.addEventListener('submit', (e)=>{
 document.getElementById('deleteBtn').addEventListener('click', ()=>{
   const id = document.getElementById('f_id').value;
   if(!id) return;
-  if(!confirm('Delete this entry? This cannot be undone.')) return;
-  entries = entries.filter(x=>x.id!==id);
+  const idx = entries.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  const [removed] = entries.splice(idx, 1);
   saveEntries(entries);
   editOverlay.classList.remove('show');
   render();
+  showToast(`Deleted "${removed.business}"`, ()=>{
+    entries.splice(idx, 0, removed);
+    saveEntries(entries);
+    render();
+  });
 });
+
+/* ---------- toast ---------- */
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+function showToast(message, onUndo){
+  clearTimeout(toastTimer);
+  toastEl.innerHTML = `<span>${escapeHTML(message)}</span>` + (onUndo ? `<button type="button">Undo</button>` : '');
+  toastEl.classList.add('show');
+  if(onUndo){
+    const btn = toastEl.querySelector('button');
+    btn.onclick = ()=>{ toastEl.classList.remove('show'); clearTimeout(toastTimer); onUndo(); };
+  }
+  toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 6000);
+}
 
 /* ---------- settings ---------- */
 const settingsOverlay = document.getElementById('settingsOverlay');
@@ -732,6 +867,9 @@ if('serviceWorker' in navigator){
 }
 
 render();
+
+const urlParams = new URLSearchParams(location.search);
+if(urlParams.get('action')==='add'){ openAdd(); }
 </script>
 </body>
 </html>
