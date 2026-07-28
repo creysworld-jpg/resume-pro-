@@ -197,6 +197,13 @@ nav.tabbar{
 }
 .install-banner.show{display:block;}
 .install-banner b{color:var(--text);}
+
+/* A11Y */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+:focus-visible{outline:2px solid #fff;outline-offset:2px;}
 </style>
 </head>
 <body>
@@ -205,21 +212,22 @@ nav.tabbar{
   <header>
     <div class="header-row">
       <div class="brand">
-        <div class="brand-mark">
+        <div class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="12" y2="16"></line></svg>
         </div>
         <div class="brand-title">Sales Tracker</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="icon-btn" id="searchToggle" title="Search">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <button class="icon-btn" id="searchToggle" title="Search" aria-label="Search">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </button>
-        <button class="icon-btn" id="settingsBtn" title="Settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><circle cx="14" cy="6" r="2" style="fill:var(--bg3)"></circle><line x1="4" y1="12" x2="20" y2="12"></line><circle cx="8" cy="12" r="2" style="fill:var(--bg3)"></circle><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="16" cy="18" r="2" style="fill:var(--bg3)"></circle></svg>
+        <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><circle cx="14" cy="6" r="2" style="fill:var(--bg3)"></circle><line x1="4" y1="12" x2="20" y2="12"></line><circle cx="8" cy="12" r="2" style="fill:var(--bg3)"></circle><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="16" cy="18" r="2" style="fill:var(--bg3)"></circle></svg>
         </button>
       </div>
     </div>
     <div class="search-wrap" id="searchWrap">
+      <label for="searchInput" class="sr-only">Search business or contact</label>
       <input type="text" id="searchInput" placeholder="Search business or contact…">
     </div>
   </header>
@@ -229,73 +237,73 @@ nav.tabbar{
       <b>Tip:</b> Add this to your home screen for one-tap access — open your browser menu and choose
       <b>“Add to Home Screen.”</b> All your data stays on this device.
     </div>
-    <div id="view"></div>
+    <div id="view" aria-live="polite"></div>
   </main>
 
-  <button class="fab" id="fabAdd">＋</button>
+  <button class="fab" id="fabAdd" aria-label="Add new entry">＋</button>
 
-  <nav class="tabbar">
-    <button class="tab active" data-tab="followups">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="M7 12l3 3 7-7"></path></svg></span>
+  <nav class="tabbar" aria-label="Main">
+    <button class="tab active" data-tab="followups" aria-current="page">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"></rect><path d="M7 12l3 3 7-7"></path></svg></span>
       Follow-Ups
     </button>
     <button class="tab" data-tab="calendar">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span>
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span>
       Calendar
     </button>
     <button class="tab" data-tab="sales">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="21" x2="5" y2="12"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="15"></line></svg></span>
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="21" x2="5" y2="12"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="15"></line></svg></span>
       Sales
     </button>
     <button class="tab" data-tab="contacts">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg></span>
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-7 8-7s8 3 8 7"></path></svg></span>
       Contacts
     </button>
   </nav>
 </div>
 
 <!-- ADD/EDIT SHEET -->
-<div class="sheet-overlay" id="editOverlay">
+<div class="sheet-overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="sheetTitle">New Entry</div>
     <form id="entryForm">
       <input type="hidden" id="f_id">
       <div class="field">
-        <label>Business Name *</label>
+        <label for="f_business">Business Name *</label>
         <input type="text" id="f_business" required placeholder="e.g. Acme Roofing">
       </div>
       <div class="field">
-        <label>Contact Name</label>
+        <label for="f_contact">Contact Name</label>
         <input type="text" id="f_contact" placeholder="e.g. Jane Smith">
       </div>
       <div class="field">
-        <label>Phone</label>
+        <label for="f_phone">Phone</label>
         <input type="tel" id="f_phone" placeholder="e.g. 555-123-4567">
       </div>
       <div class="field">
-        <label>Status</label>
-        <div class="status-grid" id="statusGrid">
-          <div class="status-opt" data-val="lead">Lead</div>
-          <div class="status-opt" data-val="appointment">Appointment</div>
-          <div class="status-opt" data-val="followup">Follow-Up</div>
-          <div class="status-opt" data-val="sold">Sold</div>
-          <div class="status-opt" data-val="lost">Lost</div>
+        <label id="statusLabel">Status</label>
+        <div class="status-grid" id="statusGrid" role="radiogroup" aria-labelledby="statusLabel">
+          <div class="status-opt" data-val="lead" role="radio" aria-checked="false" tabindex="0">Lead</div>
+          <div class="status-opt" data-val="appointment" role="radio" aria-checked="false" tabindex="0">Appointment</div>
+          <div class="status-opt" data-val="followup" role="radio" aria-checked="false" tabindex="0">Follow-Up</div>
+          <div class="status-opt" data-val="sold" role="radio" aria-checked="false" tabindex="0">Sold</div>
+          <div class="status-opt" data-val="lost" role="radio" aria-checked="false" tabindex="0">Lost</div>
         </div>
       </div>
       <div class="field">
-        <label>Next Follow-Up Date</label>
+        <label for="f_date">Next Follow-Up Date</label>
         <input type="date" id="f_date">
       </div>
       <div class="field sold-fields" id="soldFields">
-        <label>Sale Amount ($)</label>
+        <label for="f_amount">Sale Amount ($)</label>
         <input type="number" step="0.01" id="f_amount" placeholder="0.00">
         <div style="height:10px;"></div>
-        <label>Sale Date</label>
+        <label for="f_saledate">Sale Date</label>
         <input type="date" id="f_saledate">
       </div>
       <div class="field">
-        <label>Notes</label>
+        <label for="f_notes">Notes</label>
         <textarea id="f_notes" placeholder="Anything worth remembering…"></textarea>
       </div>
       <div class="sheet-actions">
@@ -308,7 +316,7 @@ nav.tabbar{
 </div>
 
 <!-- SETTINGS SHEET -->
-<div class="sheet-overlay" id="settingsOverlay">
+<div class="sheet-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Settings</div>
@@ -391,7 +399,11 @@ function filteredEntries(){
 }
 
 function render(){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===activeTab));
+  document.querySelectorAll('.tab').forEach(t=>{
+    const isActive = t.dataset.tab===activeTab;
+    t.classList.toggle('active', isActive);
+    if(isActive) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current');
+  });
   if(activeTab==='followups') renderFollowUps();
   else if(activeTab==='calendar') renderCalendar();
   else if(activeTab==='sales') renderSales();
@@ -583,11 +595,18 @@ let currentStatus = 'lead';
 
 function setStatus(val){
   currentStatus = val;
-  statusGrid.querySelectorAll('.status-opt').forEach(o=> o.classList.toggle('sel', o.dataset.val===val));
+  statusGrid.querySelectorAll('.status-opt').forEach(o=>{
+    const on = o.dataset.val===val;
+    o.classList.toggle('sel', on);
+    o.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
   document.getElementById('soldFields').classList.toggle('show', val==='sold');
 }
 statusGrid.querySelectorAll('.status-opt').forEach(o=>{
   o.addEventListener('click', ()=> setStatus(o.dataset.val));
+  o.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); setStatus(o.dataset.val); }
+  });
 });
 
 function openAdd(){
