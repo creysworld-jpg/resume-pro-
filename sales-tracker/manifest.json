@@ -1,6 +1,6 @@
 {
-  "name": "Sales Follow-Up Tracker",
-  "short_name": "SalesTrack",
+  "name": "Lamar",
+  "short_name": "Lamar",
   "description": "Track leads, appointments, follow-ups and your book of sales.",
   "start_url": "./index.html",
   "scope": "./",

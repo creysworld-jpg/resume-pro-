@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Sales Tracker</title>
+<title>Lamar</title>
 <meta name="description" content="Track leads, appointments, follow-ups and your book of sales — right from your phone.">
 <meta name="theme-color" content="#141416">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SalesTrack">
+<meta name="apple-mobile-web-app-title" content="Lamar">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -42,8 +42,10 @@ header{
 }
 .header-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .brand{display:flex;align-items:center;gap:10px;}
-.brand-mark{width:30px;height:30px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;color:#141416;}
-.brand-mark svg{width:16px;height:16px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;
+  color:#141416;font-family:'Outfit',system-ui,sans-serif;font-weight:800;font-size:17px;line-height:1;
+}
 .brand-title{font-size:17px;font-weight:700;letter-spacing:0.2px;}
 .icon-btn{
   width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);
@@ -246,10 +248,8 @@ nav.tabbar{
   <header>
     <div class="header-row">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="12" y2="16"></line></svg>
-        </div>
-        <div class="brand-title">Sales Tracker</div>
+        <div class="brand-mark" aria-hidden="true">L</div>
+        <div class="brand-title">Lamar</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="icon-btn" id="searchToggle" title="Search" aria-label="Search">
