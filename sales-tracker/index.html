@@ -122,11 +122,11 @@ main{flex:1;padding:14px 16px 100px;}
 .cal-day.pad{visibility:hidden;}
 .cal-day.today{border-color:#fff;}
 .cal-day.selected{background:#fff;color:#141416;}
-.cal-day .dots{display:flex;gap:2px;position:absolute;bottom:5px;}
+.cal-day .dots{display:flex;gap:3px;position:absolute;bottom:5px;}
 .cal-day .dot{width:4px;height:4px;border-radius:50%;background:var(--text);}
 .cal-day.selected .dot{background:#141416;}
-.cal-day .dot.overdue{background:var(--text);border:1px solid var(--text);}
-.cal-day.selected .dot.overdue{background:#141416;}
+.cal-day .dot.overdue{width:5px;height:5px;box-shadow:0 0 0 2px rgba(255,255,255,0.25);}
+.cal-day.selected .dot.overdue{background:#141416;box-shadow:0 0 0 2px rgba(20,20,22,0.25);}
 
 /* SALES TOTALS */
 .totals-row{display:flex;gap:10px;margin-bottom:14px;}
@@ -200,11 +200,16 @@ nav.tabbar{
 
 /* INSTALL BANNER */
 .install-banner{
-  display:none;margin:0 0 14px;padding:12px 14px;background:var(--card);border:1px solid var(--line2);
+  display:none;position:relative;margin:0 0 14px;padding:12px 34px 12px 14px;background:var(--card);border:1px solid var(--line2);
   border-radius:14px;font-size:12.5px;color:var(--muted);line-height:1.5;
 }
 .install-banner.show{display:block;}
 .install-banner b{color:var(--text);}
+.install-banner #dismissBanner{
+  position:absolute;top:8px;right:8px;width:24px;height:24px;border:none;background:none;color:var(--muted);
+  font-size:18px;line-height:1;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+.install-banner #dismissBanner:active{background:var(--bg3);}
 
 /* CHIPS */
 .chip-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px;scrollbar-width:none;}
@@ -268,6 +273,7 @@ nav.tabbar{
 
   <main id="main">
     <div class="install-banner" id="installBanner">
+      <button type="button" id="dismissBanner" aria-label="Dismiss tip">&times;</button>
       <b>Tip:</b> Add this to your home screen for one-tap access — open your browser menu and choose
       <b>“Add to Home Screen.”</b> All your data stays on this device.
     </div>
@@ -553,9 +559,9 @@ function renderCalendar(){
     const isToday = iso===todayStr();
     const isSel = iso===calSelectedDate;
     const items = byDate[iso] || [];
-    const hasOverdue = isToday===false && items.length && iso < todayStr();
+    const isOverdue = items.length && iso < todayStr();
     let dots = '';
-    if(items.length) dots = `<div class="dots">${items.slice(0,3).map(()=>`<span class="dot"></span>`).join('')}</div>`;
+    if(items.length) dots = `<div class="dots">${items.slice(0,3).map(()=>`<span class="dot ${isOverdue?'overdue':''}"></span>`).join('')}</div>`;
     grid += `<div class="cal-day ${isToday?'today':''} ${isSel?'selected':''}" data-date="${iso}">${d}${dots}</div>`;
   }
 
@@ -567,9 +573,9 @@ function renderCalendar(){
     <div class="cal-head">
       <div class="cal-title">${monthName}</div>
       <div class="cal-nav">
-        <button class="icon-btn" id="calPrev">‹</button>
-        <button class="icon-btn" id="calToday">•</button>
-        <button class="icon-btn" id="calNext">›</button>
+        <button class="icon-btn" id="calPrev" aria-label="Previous month">‹</button>
+        <button class="icon-btn" id="calToday" aria-label="Jump to today">•</button>
+        <button class="icon-btn" id="calNext" aria-label="Next month">›</button>
       </div>
     </div>
     <div class="cal-grid">${grid}</div>
@@ -854,9 +860,14 @@ document.getElementById('clearAllBtn').addEventListener('click', ()=>{
 /* ---------- install banner ---------- */
 (function(){
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const banner = document.getElementById('installBanner');
   if(!isStandalone && !localStorage.getItem('installBannerDismissed')){
-    document.getElementById('installBanner').classList.add('show');
+    banner.classList.add('show');
   }
+  document.getElementById('dismissBanner').addEventListener('click', ()=>{
+    banner.classList.remove('show');
+    localStorage.setItem('installBannerDismissed', '1');
+  });
 })();
 
 /* ---------- service worker ---------- */
